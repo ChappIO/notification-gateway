@@ -90,11 +90,11 @@ def MakeNotificationServer(ap: Apprise):
             attach = (
                 message.get('attach')
             )
-            # ap.notify(
-            #     body=message.get('body'),
-            #     title=message.get('title'),
-            #     attach=attach,
-            # )
+            ap.notify(
+                body=message.get('body'),
+                title=message.get('title'),
+                attach=attach,
+            )
 
             self.send_response(200)
             self.end_headers()
