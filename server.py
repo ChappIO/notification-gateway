@@ -49,33 +49,35 @@ def MakeNotificationServer(ap: Apprise):
             # Query params
             assign_params(message, query)
 
-            # Json Body
-            content_type, pdict = parse_header(headers.get('content-type'))
+            # Body
             body = {}
+            ct_header = headers.get('content-type')
+            if ct_header:
+                content_type, pdict = parse_header(ct_header)
 
-            if content_type == 'application/json':
-                length = int(headers.get('content-length'))
-                body = json.loads(self.rfile.read(length))
-                assign_params(message, body)
-            elif content_type == 'application/x-www-form-urlencoded':
-                fields = FieldStorage(
-                    fp=self.rfile,
-                    headers=self.headers,
-                    environ={'REQUEST_METHOD': 'POST'}
-                )
-                for key in fields:
-                    body[key.lower()] = fields.getvalue(key)
-                assign_params(message, body)
-            elif content_type == 'multipart/form-data':
-                pdict['boundary'] = bytes(pdict['boundary'], 'utf-8')
-                fields = parse_multipart(self.rfile, pdict)
-                for key in fields:
-                    value = fields.get(key)
-                    if type(value) == list:
-                        body[key.lower()] = value[0]
-                    else:
-                        body[key.lower()] = value
-                assign_params(message, body)
+                if content_type == 'application/json':
+                    length = int(headers.get('content-length'))
+                    body = json.loads(self.rfile.read(length))
+                    assign_params(message, body)
+                elif content_type == 'application/x-www-form-urlencoded':
+                    fields = FieldStorage(
+                        fp=self.rfile,
+                        headers=self.headers,
+                        environ={'REQUEST_METHOD': 'POST'}
+                    )
+                    for key in fields:
+                        body[key.lower()] = fields.getvalue(key)
+                    assign_params(message, body)
+                elif content_type == 'multipart/form-data':
+                    pdict['boundary'] = bytes(pdict['boundary'], 'utf-8')
+                    fields = parse_multipart(self.rfile, pdict)
+                    for key in fields:
+                        value = fields.get(key)
+                        if type(value) == list:
+                            body[key.lower()] = value[0]
+                        else:
+                            body[key.lower()] = value
+                    assign_params(message, body)
 
             print(json.dumps(
                 {
